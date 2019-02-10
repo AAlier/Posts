@@ -7,11 +7,11 @@ interface MainContract {
     interface View : ProgressBar  {
         fun onGetNextPage(list: ArrayList<PostModel>)
         fun onError(message: String)
+        fun hideErrorView()
     }
 
     interface Presenter {
         fun loadItemsForPage(page: Int)
-        fun clearDb()
-
+        suspend fun clearDb(): Boolean
     }
 }

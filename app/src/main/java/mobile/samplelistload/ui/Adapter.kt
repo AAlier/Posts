@@ -25,13 +25,12 @@ class Adapter(private val list: ArrayList<PostModel> = ArrayList()) : RecyclerVi
             post_title.text = post.title
             post_author.text = post.author
             date_posted.text = post.publishedAt.format()
-            indexView.text = (position + 1).toString()
         }
     }
 
     fun addNewPosts(newList: ArrayList<PostModel>) {
         val sizeBefore = this.list.size + 1
-        this.list.addAll(newList)
+        this.list.addAll(0, newList)
         notifyItemRangeInserted(sizeBefore, newList.size)
     }
 

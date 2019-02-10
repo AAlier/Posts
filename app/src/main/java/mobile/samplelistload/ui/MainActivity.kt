@@ -5,19 +5,21 @@ import android.os.Bundle
 import android.support.annotation.MainThread
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
+import android.view.Menu
+import android.view.MenuItem
+import android.view.MenuItem.SHOW_AS_ACTION_ALWAYS
 import android.view.View
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_error_loading.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import mobile.samplelistload.GeneratorService
-import mobile.samplelistload.model.PostModel
-import mobile.samplelistload.R
 import mobile.samplelistload.SampleApplication
+import mobile.samplelistload.model.PostModel
+import mobile.samplelistload.util.RecyclerItemClickListener
+import mobile.samplelistload.R
 
-class MainActivity : BaseActivity(), MainContract.View {
+class MainActivity : BaseActivity(), MainContract.View, RecyclerItemClickListener.OnItemClickListener {
     lateinit var mLayoutManager: LinearLayoutManager
     lateinit var mPresenter: MainContract.Presenter
     lateinit var mAdapter: Adapter
@@ -35,7 +37,7 @@ class MainActivity : BaseActivity(), MainContract.View {
         }
 
         swipeRefreshLayout.setOnRefreshListener {
-            when(it){
+            when (it) {
                 SwipyRefreshLayoutDirection.TOP -> {
                     currentPage = 0
                 }
@@ -43,6 +45,10 @@ class MainActivity : BaseActivity(), MainContract.View {
             loadingNextPage()
         }
         simulateErrorWithDelay()
+
+        recyclerView.addOnItemTouchListener(
+            RecyclerItemClickListener(this, recyclerView, this)
+        )
     }
 
     private fun initSetup() {
@@ -68,14 +74,49 @@ class MainActivity : BaseActivity(), MainContract.View {
         }
     }
 
-    @MainThread
-    override fun showLoadingIndicator() {
-        swipeRefreshLayout?.setRefreshing(true)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menu.add(0, 0, 0, "Clear")
+            .setShortcut('0', 'c')
+            .setShowAsAction(SHOW_AS_ACTION_ALWAYS)
+        return true
     }
 
-    @MainThread
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when (item.itemId) {
+            0 -> {
+                GlobalScope.launch{
+                    if (mPresenter.clearDb())
+                        longToast("Successfully cleared database")
+                    else
+                        longToast("Error clearing database")
+                    // Reload data if necessary
+                    reloadData()
+                }
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onItemClick(view: View, position: Int) {
+        recyclerView.smoothScrollToPosition(0);
+    }
+
+    override fun onLongItemClick(view: View, position: Int) {}
+
+    private fun reloadData() {
+        currentPage = 0
+        loadingNextPage()
+    }
+
+    override fun showLoadingIndicator() {
+        runOnUiThread { swipeRefreshLayout?.setRefreshing(true) }
+    }
+
     override fun hideLoadingIndicator() {
-        swipeRefreshLayout?.setRefreshing(false)
+        runOnUiThread { swipeRefreshLayout?.setRefreshing(false) }
     }
 
     override fun onResume() {
@@ -94,33 +135,66 @@ class MainActivity : BaseActivity(), MainContract.View {
 
     @MainThread
     override fun onGetNextPage(list: ArrayList<PostModel>) {
-        recyclerView.post {
-            if (currentPage == 0) {
-                mAdapter.updateList(list)
-                shortToast("${list.size} new item${if (list.size > 1) "s" else ""}")
-            } else {
-                mAdapter.addNewPosts(list)
-                shortToast("${list.size} more items")
-            }
-            if (!list.isEmpty()) {
-                currentPage++
+        runOnUiThread {
+            recyclerView.post {
+                if (currentPage == 0) {
+                    mAdapter.updateList(list)
+                    shortToast("${list.size} new item${if (list.size > 1) "s" else ""}")
+                } else {
+                    mAdapter.addNewPosts(list)
+                    shortToast("${list.size} more items")
+                }
+                if (!list.isEmpty()) {
+                    currentPage++
+                }
             }
         }
     }
 
-    @MainThread
-    private fun showErrorLoading() {
-        errorLayout?.visibility = View.VISIBLE
-        progressBar.visibility = View.GONE
+    override fun hideErrorView(){
+        runOnUiThread {
+            errorLayout?.visibility = View.GONE
+            progressBar.visibility = View.GONE
+        }
     }
 
-    @MainThread
+    private fun showErrorLoading() {
+        runOnUiThread {
+            errorLayout?.visibility = View.VISIBLE
+            progressBar.visibility = View.GONE
+        }
+    }
+
     override fun onError(message: String) {
         shortToast(message)
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mPresenter.clearDb()
-    }
 }
+
+/*
+*   Pagination
+*   recyclerView.addOnScrollListener(recyclerViewOnScrollListener);
+*
+*   In case if we need to load without pulling bottom refresh layout
+*
+    val recyclerViewOnScrollListener = object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val visibleItemCount = mLayoutManager.getChildCount()
+                val totalItemCount = mLayoutManager.getItemCount()
+                val firstVisibleItemPosition = mLayoutManager.findFirstVisibleItemPosition()
+
+                if (!isLoading && !isLastPage) {
+                    if (visibleItemCount + firstVisibleItemPosition >= totalItemCount
+                        && firstVisibleItemPosition >= 0
+                        && totalItemCount >= PAGE_SIZE
+                    ) {
+                        loadingNextPage()
+                    }
+                }
+            }
+        }
+* */

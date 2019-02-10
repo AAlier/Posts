@@ -8,16 +8,18 @@ class MainPresenter(private val db: IDatabaseHandler,
 
     override fun loadItemsForPage(page: Int) {
         mView?.showLoadingIndicator()
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.IO) {
             delay(3000)
             mView?.onGetNextPage(db.getPage(page))
+            mView?.hideErrorView()
             mView?.hideLoadingIndicator()
         }
     }
 
-    override fun clearDb(){
-        GlobalScope.launch {
-            db.closeDB()
+    override suspend fun clearDb() : Boolean {
+        val task = GlobalScope.async(Dispatchers.IO) {
+            db.clearDB()
         }
+        return task.await()
     }
 }

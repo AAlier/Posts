@@ -75,7 +75,7 @@ class DatabaseHandler(context: Context) :
 
     private fun getSelectQueryForPage(page: Int, itemCount: Int): String {
         return "SELECT * FROM $TABLE_TITLE_POST " +
-                "ORDER BY $KEY_ID " +
+                "ORDER BY $KEY_DATE " +
                 "LIMIT ${page * itemCount}, ${itemCount};"
     }
 
@@ -89,11 +89,15 @@ class DatabaseHandler(context: Context) :
         return post
     }
 
-    override fun closeDB() {
+    override fun clearDB() : Boolean {
         dbWrite.beginTransaction()
         dbWrite.delete(TABLE_TITLE_POST, null, null)
         dbWrite.setTransactionSuccessful()
         dbWrite.endTransaction()
+        return true
+    }
+
+    override fun closeDB() {
         this.close()
     }
 
