@@ -1,0 +1,42 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+}
+
+android {
+    compileSdkVersion sdkCompileVersion
+    defaultConfig {
+        applicationId "mobile.samplelistload"
+        minSdkVersion sdkMinVersion
+        targetSdkVersion sdkTargetVersion
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "DATABASE_NAME", "${database_name}"
+        buildConfigField "Integer", "DATABASE_VERSION", "${database_version}"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation kotlinDeps.stdlib
+    implementation coroutineDeps.coroutinesCore
+
+    implementation otherDeps.appcompat
+    implementation otherDeps.constraint
+    implementation otherDeps.recyclerview
+    implementation otherDeps.swipelayout
+
+    testImplementation testDeps.junit
+    androidTestImplementation androidTestDeps.androidTestRunner
+    androidTestImplementation androidTestDeps.espressoCore
+}

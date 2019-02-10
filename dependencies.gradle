@@ -1,0 +1,47 @@
+ext {
+    sdkMinVersion = 15
+    sdkTargetVersion = 28
+    sdkCompileVersion = 28
+    buildToolsAllVersion = '28.0.3'
+
+    gradlePluginVersion = '3.3.0'
+    kotlinVersion = '1.3.20'
+
+    gradlePluginDeps = [
+            build : "com.android.tools.build:gradle:$gradlePluginVersion",
+            kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion",
+    ]
+
+    kotlinDeps = [
+            // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
+            stdlib: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    ]
+
+    coroutineVersion = '1.1.1'
+    coroutineDeps = [
+            coroutinesCore: "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion",
+    ]
+
+    otherDeps = [
+            // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
+            appcompat   : "com.android.support:appcompat-v7:28.0.0",
+            constraint  : "com.android.support.constraint:constraint-layout:1.1.3",
+            recyclerview: 'com.android.support:recyclerview-v7:28.0.0',
+            swipelayout : 'com.github.orangegangsters:swipy:1.2.3@aar'
+    ]
+
+    espressoVersion = '3.0.2'
+    supportTestVersion = '1.0.2'
+
+    androidTestDeps = [
+            // https://mvnrepository.com/artifact/androidx.test/runner
+            androidTestRunner: "com.android.support.test:runner:$supportTestVersion",
+            // https://mvnrepository.com/artifact/androidx.test.espresso/espresso-core
+            espressoCore     : "com.android.support.test.espresso:espresso-core:$espressoVersion"
+    ]
+
+    testDeps = [
+            // https://mvnrepository.com/artifact/junit/junit
+            junit          : 'junit:junit:4.12'
+    ]
+}

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SampleListLoad</string>
+    <string name="error_loading">Ooops, something is wrong.\nPlease, try again</string>
+    <string name="reload">Reload</string>
+</resources>
